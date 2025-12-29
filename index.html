@@ -55,68 +55,25 @@
       <header class="text-center mb-8">
         <h1 class="text-3xl font-extrabold">이 정도면 쉬어야 할까?</h1>
         <p class="mt-2 text-white/70">
-          지금 상태 기준으로 참고용 휴식 필요도를 계산합니다
+          짧은 설문으로 지금 쉬어도 좋을지 가볍게 확인해보세요
         </p>
       </header>
 
       <!-- Form -->
       <section class="rounded-2xl bg-white/5 border border-white/10 p-6">
-        <div class="space-y-4">
-          <label class="block">
-            <span class="text-sm text-white/70">어제 수면 시간 (시간)</span>
-            <input
-              id="sleep"
-              type="number"
-              min="0"
-              max="12"
-              step="0.5"
-              class="mt-1 w-full rounded-xl bg-black/20 border border-white/10 px-4 py-2"
-            />
-          </label>
-
-          <label class="block">
-            <span class="text-sm text-white/70">오늘 집중도 (1~5)</span>
-            <input
-              id="focus"
-              type="range"
-              min="1"
-              max="5"
-              value="3"
-              class="w-full"
-            />
-          </label>
-
-          <label class="block">
-            <span class="text-sm text-white/70">오늘 피로도 (1~5)</span>
-            <input
-              id="fatigue"
-              type="range"
-              min="1"
-              max="5"
-              value="3"
-              class="w-full"
-            />
-          </label>
-
-          <label class="block">
-            <span class="text-sm text-white/70">오늘 커피/카페인 섭취</span>
-            <select
-              id="caffeine"
-              class="mt-1 w-full rounded-xl bg-black/20 border border-white/10 px-4 py-2"
-            >
-              <option value="0">거의 없음</option>
-              <option value="1">1~2잔</option>
-              <option value="2">3잔 이상</option>
-            </select>
-          </label>
-
-          <button
-            onclick="calc()"
-            class="w-full mt-4 px-4 py-3 rounded-xl bg-emerald-500 text-slate-950 font-semibold"
+        <div class="flex items-center justify-between">
+          <p class="text-white/80">5개의 간단한 설문에 답해주세요</p>
+          <span class="text-xs px-3 py-1 rounded-full bg-white/10 text-white/70"
+            >약 30초</span
           >
-            결과 보기
-          </button>
         </div>
+        <div id="survey" class="mt-4 space-y-4"></div>
+        <button
+          onclick="calc()"
+          class="w-full mt-6 px-4 py-3 rounded-xl bg-emerald-500 text-slate-950 font-semibold"
+        >
+          결과 보기
+        </button>
       </section>
 
       <!-- Result -->
@@ -142,36 +99,120 @@
     </main>
 
     <script>
+      const questions = [
+        {
+          id: "q1",
+          text: "몸이 무겁고 눈이 쉽게 피로해진다",
+          note: "자꾸 자세가 무너지고 눈이 시리다면 체크",
+        },
+        {
+          id: "q2",
+          text: "같은 작업을 90분 이상 붙잡고 있다",
+          note: "타이머 없이 몰입했다면 더 쉬기 쉬움",
+        },
+        {
+          id: "q3",
+          text: "사소한 실수를 반복하거나 되돌리며 일한다",
+          note: "타자 실수, 덮어쓰기 등",
+        },
+        {
+          id: "q4",
+          text: "지금 하는 일은 조금 미뤄도 큰 문제 없다",
+          note: "마감 여유가 있다면 휴식 적합",
+        },
+        {
+          id: "q5",
+          text: "마감이 정말 코앞이라 멈추기 어렵다",
+          note: "마감 급할수록 휴식 점수는 깎입니다",
+          reverse: true,
+        },
+      ];
+
+      const scale = [
+        { label: "전혀 아니다", value: 1 },
+        { label: "조금 아니다", value: 2 },
+        { label: "보통", value: 3 },
+        { label: "조금 그렇다", value: 4 },
+        { label: "매우 그렇다", value: 5 },
+      ];
+
+      function renderSurvey() {
+        const container = document.getElementById("survey");
+        container.innerHTML = questions
+          .map(
+            (q) => `
+            <div class="rounded-xl bg-black/20 border border-white/10 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="font-semibold">${q.text}</p>
+                  <p class="text-sm text-white/60">${q.note}</p>
+                </div>
+                <span class="text-xs text-white/50">선택 필수</span>
+              </div>
+              <div class="mt-3 grid grid-cols-5 gap-2 text-xs">
+                ${scale
+                  .map(
+                    (s) => `
+                    <label class="flex flex-col items-center gap-2 rounded-lg bg-white/5 border border-white/5 px-2 py-2 hover:border-emerald-400/60 cursor-pointer transition">
+                      <input type="radio" name="${q.id}" value="${s.value}" class="accent-emerald-400" ${
+                      s.value === 3 ? "checked" : ""
+                    } />
+                      <span>${s.label}</span>
+                    </label>
+                  `
+                  )
+                  .join("")}
+              </div>
+            </div>
+          `
+          )
+          .join("");
+      }
+
       function calc() {
-        const sleep = parseFloat(document.getElementById("sleep").value || 0);
-        const focus = parseInt(document.getElementById("focus").value);
-        const fatigue = parseInt(document.getElementById("fatigue").value);
-        const caffeine = parseInt(document.getElementById("caffeine").value);
-
         let score = 0;
-        if (sleep < 6) score += 30;
-        if (sleep < 5) score += 10;
-        score += (fatigue - 1) * 10;
-        score += (5 - focus) * 8;
-        score += caffeine * 5;
+        let answered = 0;
 
-        score = Math.min(100, score);
+        questions.forEach((q) => {
+          const selected = document.querySelector(
+            `input[name="${q.id}"]:checked`
+          );
+          if (!selected) return;
 
-        let msg = "";
-        if (score < 35) {
-          msg =
-            "지금은 계속해도 무리는 없어 보입니다. 다만 중간 휴식은 챙기세요.";
-        } else if (score < 65) {
-          msg =
-            "조금 쉬는 게 효율에 도움이 될 수 있습니다. 짧은 휴식을 권장합니다.";
-        } else {
-          msg = "지금 쉬는 것이 오히려 전체 효율에 유리해 보입니다.";
+          let value = parseInt(selected.value, 10);
+          if (q.reverse) value = 6 - value;
+
+          score += value;
+          answered += 1;
+        });
+
+        if (answered !== questions.length) {
+          alert("모든 문항에 답해주세요.");
+          return;
         }
 
-        document.getElementById("score").textContent = score + "%";
+        const percent = Math.round(
+          (score / (questions.length * 5)) * 100
+        );
+
+        let msg = "";
+        if (percent < 35) {
+          msg =
+            "지금은 계속해도 괜찮아 보입니다. 10~15분 스트레칭 정도만 챙겨보세요.";
+        } else if (percent < 65) {
+          msg =
+            "짧은 휴식을 권장합니다. 15~25분 걸으면서 눈과 몸을 풀어주세요.";
+        } else {
+          msg =
+            "지금 쉬는 편이 전체 효율에 유리합니다. 30분 이상 확실히 쉬고 리셋하세요.";
+        }
+
+        document.getElementById("score").textContent = percent + "%";
         document.getElementById("comment").textContent = msg;
         document.getElementById("result").classList.remove("hidden");
       }
+
+      renderSurvey();
     </script>
   </body>
 </html>

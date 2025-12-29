@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>이 정도면 쉬어야 할까?</title>
+
+    <!-- SEO -->
+    <meta
+      name="description"
+      content="지금 상태 기준으로 쉬어야 할지 계산해봅니다. 수면·피로·집중도 기반 참고용 체크."
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://funnyfunny.cloud/rest-check/" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Should I Rest Now?" />
+    <meta
+      property="og:description"
+      content="Check if you should take a break based on your current condition."
+    />
+    <meta
+      property="og:image"
+      content="https://dummyimage.com/1200x630/0b1220/ffffff&text=Should+I+Rest+Now"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://funnyfunny.cloud/rest-check/" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Should I Rest Now?" />
+    <meta
+      name="twitter:description"
+      content="Simple condition-based rest check."
+    />
+    <meta
+      name="twitter:image"
+      content="https://dummyimage.com/1200x630/0b1220/ffffff&text=Should+I+Rest+Now"
+    />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1220'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-size='28' fill='white'%3ER%3C/text%3E%3C/svg%3E"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body
+    class="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 text-white"
+  >
+    <main class="max-w-xl mx-auto px-4 py-10">
+      <header class="text-center mb-8">
+        <h1 class="text-3xl font-extrabold">이 정도면 쉬어야 할까?</h1>
+        <p class="mt-2 text-white/70">
+          지금 상태 기준으로 참고용 휴식 필요도를 계산합니다
+        </p>
+      </header>
+
+      <!-- Form -->
+      <section class="rounded-2xl bg-white/5 border border-white/10 p-6">
+        <div class="space-y-4">
+          <label class="block">
+            <span class="text-sm text-white/70">어제 수면 시간 (시간)</span>
+            <input
+              id="sleep"
+              type="number"
+              min="0"
+              max="12"
+              step="0.5"
+              class="mt-1 w-full rounded-xl bg-black/20 border border-white/10 px-4 py-2"
+            />
+          </label>
+
+          <label class="block">
+            <span class="text-sm text-white/70">오늘 집중도 (1~5)</span>
+            <input
+              id="focus"
+              type="range"
+              min="1"
+              max="5"
+              value="3"
+              class="w-full"
+            />
+          </label>
+
+          <label class="block">
+            <span class="text-sm text-white/70">오늘 피로도 (1~5)</span>
+            <input
+              id="fatigue"
+              type="range"
+              min="1"
+              max="5"
+              value="3"
+              class="w-full"
+            />
+          </label>
+
+          <label class="block">
+            <span class="text-sm text-white/70">오늘 커피/카페인 섭취</span>
+            <select
+              id="caffeine"
+              class="mt-1 w-full rounded-xl bg-black/20 border border-white/10 px-4 py-2"
+            >
+              <option value="0">거의 없음</option>
+              <option value="1">1~2잔</option>
+              <option value="2">3잔 이상</option>
+            </select>
+          </label>
+
+          <button
+            onclick="calc()"
+            class="w-full mt-4 px-4 py-3 rounded-xl bg-emerald-500 text-slate-950 font-semibold"
+          >
+            결과 보기
+          </button>
+        </div>
+      </section>
+
+      <!-- Result -->
+      <section
+        id="result"
+        class="hidden mt-6 rounded-2xl bg-white/5 border border-white/10 p-6"
+      >
+        <p class="text-sm text-white/60">휴식 필요도</p>
+        <p id="score" class="text-3xl font-extrabold mt-1"></p>
+        <p id="comment" class="mt-3 text-white/80 leading-relaxed"></p>
+      </section>
+
+      <!-- Other services -->
+      <div class="flex justify-center pt-8 mt-12 border-t border-gray-200/20">
+        <a
+          href="https://funnyfunny.cloud/"
+          target="_blank"
+          class="px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-lg"
+        >
+          다른 서비스 보기
+        </a>
+      </div>
+    </main>
+
+    <script>
+      function calc() {
+        const sleep = parseFloat(document.getElementById("sleep").value || 0);
+        const focus = parseInt(document.getElementById("focus").value);
+        const fatigue = parseInt(document.getElementById("fatigue").value);
+        const caffeine = parseInt(document.getElementById("caffeine").value);
+
+        let score = 0;
+        if (sleep < 6) score += 30;
+        if (sleep < 5) score += 10;
+        score += (fatigue - 1) * 10;
+        score += (5 - focus) * 8;
+        score += caffeine * 5;
+
+        score = Math.min(100, score);
+
+        let msg = "";
+        if (score < 35) {
+          msg =
+            "지금은 계속해도 무리는 없어 보입니다. 다만 중간 휴식은 챙기세요.";
+        } else if (score < 65) {
+          msg =
+            "조금 쉬는 게 효율에 도움이 될 수 있습니다. 짧은 휴식을 권장합니다.";
+        } else {
+          msg = "지금 쉬는 것이 오히려 전체 효율에 유리해 보입니다.";
+        }
+
+        document.getElementById("score").textContent = score + "%";
+        document.getElementById("comment").textContent = msg;
+        document.getElementById("result").classList.remove("hidden");
+      }
+    </script>
+  </body>
+</html>

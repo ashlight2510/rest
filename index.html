@@ -467,10 +467,13 @@
           msg = t("resultHigh");
         }
 
-        document.getElementById("score").textContent = percent + "%";
-        document.getElementById("comment").textContent = msg;
-        document.getElementById("surveySection").classList.add("hidden");
-        document.getElementById("result").classList.remove("hidden");
+        // result.html로 리다이렉트
+        const params = new URLSearchParams({
+          score: percent.toString(),
+          comment: msg,
+          level: percent < 35 ? 'low' : (percent < 65 ? 'mid' : 'high')
+        });
+        window.location.href = `result.html?${params.toString()}`;
         return percent;
       }
 
